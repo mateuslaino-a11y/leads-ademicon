@@ -315,10 +315,11 @@ function renderLeads(){
 
 async function sendToSheets(){
   const valid=leads.filter(l=>!l.erro);if(valid.length===0)return;
+  const clean=valid.map(l=>({...l,telefone:l.telefone?l.telefone.replace(/\+/g,''):'' }));
   const btn=document.getElementById('sheets-btn');
   btn.disabled=true;btn.textContent='⏳ Enviando...';
   try{
-    await fetch(SHEETS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(valid)});
+    await fetch(SHEETS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(clean)});
     btn.textContent='✓ Enviado para Google Sheets!';
     document.getElementById('sheets-hint').textContent=`${valid.length} leads adicionados à planilha`;
     showToast(`✓ ${valid.length} leads enviados!`,3000);
@@ -328,7 +329,7 @@ async function sendToSheets(){
 function exportCSV(){
   const valid=leads.filter(l=>!l.erro);if(valid.length===0)return;
   const headers=['Nome','Telefone','Email','Segmento','Produto','Valor (R$)','Data Extração'];
-  const rows=valid.map(l=>[l.nome||'',l.telefone||'',l.email||'',l.segmento||'',l.produto||'',l.valor||'',l.data||'']);
+  const rows=valid.map(l=>[l.nome||'',l.telefone ? l.telefone.replace(/+/g,'') : '',l.email||'',l.segmento||'',l.produto||'',l.valor||'',l.data||'']);
   const csv=[headers,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
   const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
   const url=URL.createObjectURL(blob);const a=document.createElement('a');
