@@ -272,7 +272,9 @@ async function extractLeadFromImage(file){
   if(!response.ok){const err=await response.json().catch(()=>({}));throw new Error(err.error?.message||`Erro ${response.status}`)}
   const data=await response.json();
   const text=data.content?.[0]?.text||'{}';
-  return JSON.parse(text.replace(/```json|```/g,'').trim());
+  const parsed=JSON.parse(text.replace(/```json|```/g,'').trim());
+  if(parsed.telefone) parsed.telefone=parsed.telefone.replace(/[+()\s]/g,'').trim();
+  return parsed;
 }
 
 async function processAll(){
@@ -371,5 +373,6 @@ function clearAll(){
   document.getElementById('sheets-hint').textContent='Acumula na mesma planilha sempre';
 }
 </script>
+<div style="text-align:center;padding:20px 0 0;font-size:11px;font-family:'IBM Plex Mono',monospace;color:#9B9690;">v1.2 — Trilha 41 · Ademicon</div>
 </body>
 </html>
