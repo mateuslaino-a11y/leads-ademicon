@@ -101,6 +101,17 @@
   .notice{background:rgba(196,147,85,0.1);border:1px solid rgba(196,147,85,0.3);border-radius:8px;padding:10px 14px;font-size:12px;color:#7a5a28;font-family:'IBM Plex Mono',monospace;margin-bottom:14px;line-height:1.5}
   .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--charcoal);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;font-family:'IBM Plex Mono',monospace;z-index:200;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap}
   .toast.show{opacity:1}
+  .login-overlay{position:fixed;inset:0;background:var(--forest);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px}
+  .login-box{background:#fff;border-radius:16px;padding:32px 24px;width:100%;max-width:360px;text-align:center}
+  .login-logo{width:48px;height:48px;background:var(--gold);border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:"IBM Plex Mono",monospace;font-size:16px;font-weight:500;color:var(--forest);margin:0 auto 16px}
+  .login-title{font-size:18px;font-weight:600;color:var(--text);margin-bottom:4px}
+  .login-sub{font-size:12px;color:var(--muted);font-family:"IBM Plex Mono",monospace;margin-bottom:24px}
+  .login-input{width:100%;padding:12px;border:1.5px solid var(--border);border-radius:8px;font-size:18px;font-family:"IBM Plex Mono",monospace;text-align:center;letter-spacing:6px;outline:none;margin-bottom:12px}
+  .login-input:focus{border-color:var(--forest)}
+  .login-btn{width:100%;padding:13px;background:var(--forest);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;font-family:"Sora",sans-serif;cursor:pointer}
+  .login-btn:hover{background:#2e3e27}
+  .login-error{font-size:12px;color:var(--error);font-family:"IBM Plex Mono",monospace;margin-top:8px;height:16px}
+
   @keyframes spin{to{transform:rotate(360deg)}}
   .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;display:none}
   .btn-primary.loading .spinner{display:block}
@@ -108,6 +119,17 @@
 </style>
 </head>
 <body>
+
+<div class="login-overlay" id="login-overlay">
+  <div class="login-box">
+    <div class="login-logo">T41</div>
+    <div class="login-title">Extrator de Leads</div>
+    <div class="login-sub">Ademicon · Acesso restrito</div>
+    <input type="password" class="login-input" id="login-input" placeholder="••••••" maxlength="10" onkeydown="if(event.key==='Enter')checkPassword()">
+    <button class="login-btn" onclick="checkPassword()">Entrar</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
 <header>
   <div class="header-inner">
     <div class="logo">
@@ -206,6 +228,23 @@
 <div class="toast" id="toast"></div>
 
 <script>
+
+const PWD_KEY='ademicon_auth';
+function checkPassword(){
+  const val=document.getElementById('login-input').value;
+  if(val==='000123'){
+    localStorage.setItem(PWD_KEY,'ok');
+    document.getElementById('login-overlay').style.display='none';
+  } else {
+    document.getElementById('login-error').textContent='Senha incorreta';
+    document.getElementById('login-input').value='';
+    setTimeout(()=>document.getElementById('login-error').textContent='',2000);
+  }
+}
+window.addEventListener('DOMContentLoaded',()=>{
+  if(localStorage.getItem(PWD_KEY)==='ok') document.getElementById('login-overlay').style.display='none';
+});
+
 const STORAGE_KEY='ademicon_api_key';
 const SESSION_KEY='ademicon_session';
 const SHEETS_URL='https://script.google.com/macros/s/AKfycbzi_-0mbdHR2GKnif5JS1FVoKz2WIeI_jZd7kURPDYFnzxwkLOm3B4fggRZnMFgtCsB/exec';
@@ -373,6 +412,6 @@ function clearAll(){
   document.getElementById('sheets-hint').textContent='Acumula na mesma planilha sempre';
 }
 </script>
-<div style="text-align:center;padding:20px 0 0;font-size:11px;font-family:'IBM Plex Mono',monospace;color:#9B9690;">v1.2 — Trilha 41 · Ademicon</div>
+<div style="text-align:center;padding:20px 0 0;font-size:11px;font-family:'IBM Plex Mono',monospace;color:#9B9690;">v1.3 — Trilha 41 · Ademicon</div>
 </body>
 </html>
