@@ -229,7 +229,7 @@
 <div class="toast" id="toast"></div>
 
 
-<div style="text-align:center;padding:20px 0 0;font-size:11px;font-family:'IBM Plex Mono',monospace;color:#9B9690;">v1.6 — Trilha 41 · Ademicon</div>
+<div style="text-align:center;padding:20px 0 0;font-size:11px;font-family:'IBM Plex Mono',monospace;color:#9B9690;">v1.7 — Trilha 41 · Ademicon</div>
 
 <script>
 
@@ -319,6 +319,7 @@ async function extractLeadFromImage(file){
   const text=data.content?.[0]?.text||'{}';
   const parsed=JSON.parse(text.replace(/```json|```/g,'').trim());
   if(parsed.telefone) parsed.telefone=parsed.telefone.replace(/[+()\s]/g,'').trim();
+  if(!parsed.primeiro_nome || parsed.primeiro_nome==='null') { parsed.primeiro_nome = parsed.nome ? parsed.nome.trim().split(' ')[0] : ''; }
   return parsed;
 }
 
