@@ -116,6 +116,34 @@
   .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;display:none}
   .btn-primary.loading .spinner{display:block}
   .btn-primary.loading .btn-text{display:none}
+
+  /* Modal de duplicatas */
+  .dup-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;align-items:flex-end}
+  .dup-modal-overlay.open{display:flex}
+  .dup-modal{background:#fff;border-radius:16px 16px 0 0;padding:20px 16px 32px;width:100%;max-height:90vh;overflow-y:auto}
+  .dup-modal-header{margin-bottom:4px}
+  .dup-modal-title{font-size:15px;font-weight:600;color:var(--text);display:flex;align-items:center;justify-content:space-between}
+  .dup-modal-sub{font-size:12px;color:var(--muted);font-family:'IBM Plex Mono',monospace;margin-top:4px;margin-bottom:16px;line-height:1.5}
+  .dup-section-label{font-size:10px;font-weight:600;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin:12px 0 6px}
+  .dup-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:8px;background:var(--surface);border:1px solid var(--border);margin-bottom:6px}
+  .dup-item.type-session{border-left:3px solid var(--gold)}
+  .dup-item.type-sheet{border-left:3px solid var(--error)}
+  .dup-item input[type=checkbox]{margin-top:2px;width:16px;height:16px;accent-color:var(--forest);flex-shrink:0;cursor:pointer}
+  .dup-item-info{flex:1;min-width:0}
+  .dup-item-name{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .dup-item-detail{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);margin-top:2px}
+  .dup-item-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:4px;margin-top:4px}
+  .dup-item-badge.session{background:rgba(196,147,85,0.15);color:#7a5a28}
+  .dup-item-badge.sheet{background:rgba(193,18,31,0.1);color:var(--error)}
+  .dup-actions{display:flex;gap:8px;margin-top:16px}
+  .dup-btn{flex:1;padding:13px;border-radius:var(--radius);font-size:14px;font-weight:600;font-family:'Sora',sans-serif;cursor:pointer;border:none}
+  .dup-btn-confirm{background:var(--forest);color:#fff}
+  .dup-btn-confirm:hover{background:#2e3e27}
+  .dup-btn-cancel{background:#fff;color:var(--muted);border:1.5px solid var(--border)}
+  .dup-select-row{display:flex;gap:12px;margin-bottom:8px}
+  .dup-select-link{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--forest);cursor:pointer;text-decoration:underline;background:none;border:none;padding:0}
+  .dup-summary{background:rgba(61,82,56,0.06);border-radius:8px;padding:10px 12px;font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--forest);margin-bottom:12px}
+  .dup-ok-section{background:rgba(45,106,79,0.06);border:1px solid rgba(45,106,79,0.2);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--success)}
 </style>
 
 </head>
@@ -228,8 +256,40 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- Modal de Duplicatas -->
+<div class="dup-modal-overlay" id="dup-modal" onclick="if(event.target===this)closeDupModal()">
+  <div class="dup-modal">
+    <div class="dup-modal-header">
+      <div class="dup-modal-title">
+        <span>⚠️ Duplicatas encontradas</span>
+        <button class="modal-close" onclick="closeDupModal()">×</button>
+      </div>
+      <div class="dup-modal-sub" id="dup-modal-sub"></div>
+    </div>
+    <div id="dup-ok-section" class="dup-ok-section" style="display:none"></div>
+    <div class="dup-summary" id="dup-summary"></div>
+    <div id="dup-list-container">
+      <div id="dup-session-section" style="display:none">
+        <div class="dup-section-label">🔁 Repetidos neste lote</div>
+        <div id="dup-session-list"></div>
+      </div>
+      <div id="dup-sheet-section" style="display:none">
+        <div class="dup-section-label">📊 Já existem na planilha</div>
+        <div id="dup-sheet-list"></div>
+      </div>
+    </div>
+    <div class="dup-select-row">
+      <button class="dup-select-link" onclick="toggleAllDups(true)">Marcar todos</button>
+      <button class="dup-select-link" onclick="toggleAllDups(false)">Desmarcar todos</button>
+    </div>
+    <div class="dup-actions">
+      <button class="dup-btn dup-btn-cancel" onclick="closeDupModal()">Cancelar</button>
+      <button class="dup-btn dup-btn-confirm" id="dup-confirm-btn" onclick="confirmSendWithDups()">Enviar selecionados</button>
+    </div>
+  </div>
+</div>
 
-<div style="text-align:center;padding:20px 0 0;font-size:11px;font-family:'IBM Plex Mono',monospace;color:#9B9690;">v1.8 — Trilha 41 · Ademicon</div>
+<div style="text-align:center;padding:20px 0 0;font-size:11px;font-family:'IBM Plex Mono',monospace;color:#9B9690;">v2.0 — Trilha 41 · Ademicon</div>
 
 <script>
 
@@ -253,7 +313,7 @@ window.addEventListener('DOMContentLoaded',()=>{
 
 const STORAGE_KEY='ademicon_api_key';
 const SESSION_KEY='ademicon_session';
-const SHEETS_URL='https://script.google.com/macros/s/AKfycbzV9_68td961vQZcM8P_pbRybbkylTV9MtEXqChB5zxNd9r0AttyzvX2qYE1ACRFZI-1g/exec';
+const SHEETS_URL='https://script.google.com/macros/s/AKfycbxuKll__5OPRcPdlPsCxjQxEArOnrqJSPogs-xK-bPLEb3fntMDum2gzmAGPO-1Go9J/exec';
 let leads=[],files=[],editIndex=-1;
 
 function showToast(msg,duration=2500){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),duration)}
@@ -361,18 +421,199 @@ function renderLeads(){
   }).join('');
 }
 
-async function sendToSheets(){
-  const valid=leads.filter(l=>!l.erro);if(valid.length===0)return;
-  const clean=valid.map(l=>({...l,telefone:l.telefone?l.telefone.replace(/\+/g,''):'' ,primeiro_nome:l.primeiro_nome||'' }));
+// ─── DEDUPLICAÇÃO v2.0 ────────────────────────────────────────────────────────
+
+// normaliza telefone para comparação: só dígitos
+function normalizeTel(tel){return (tel||'').replace(/\D/g,'')}
+
+// busca telefones já na planilha via doGet (JSONP para evitar CORS)
+async function fetchSheetsPhones(){
+  return new Promise((resolve)=>{
+    const cbName='_sheetsCb_'+Date.now();
+    const script=document.createElement('script');
+    const timeout=setTimeout(()=>{
+      delete window[cbName];
+      script.remove();
+      resolve([]);
+    },8000);
+    window[cbName]=function(data){
+      clearTimeout(timeout);
+      delete window[cbName];
+      script.remove();
+      resolve((data.phones||[]).map(normalizeTel).filter(Boolean));
+    };
+    script.src=SHEETS_URL+'?action=getPhones&callback='+cbName;
+    script.onerror=()=>{clearTimeout(timeout);delete window[cbName];resolve([])};
+    document.head.appendChild(script);
+  });
+}
+
+// estado do modal de duplicatas
+let _dupState={leadsToSend:[],duplicatas:[]};
+
+function closeDupModal(){
+  document.getElementById('dup-modal').classList.remove('open');
+}
+
+function toggleAllDups(checked){
+  document.querySelectorAll('.dup-checkbox').forEach(cb=>cb.checked=checked);
+}
+
+// chamado pelo botão "Enviar selecionados" do modal
+async function confirmSendWithDups(){
+  // leads sem duplicata + os duplicados que o user marcou para enviar
+  const selected=new Set([..._dupState.leadsToSend.map((_,i)=>i)]);
+  const checkedDups=[..._dupState.duplicatas].filter((_,i)=>{
+    const cb=document.getElementById(`dup-cb-${i}`);
+    return cb&&cb.checked;
+  });
+  const allToSend=[..._dupState.leadsToSend,...checkedDups];
+  closeDupModal();
+  await doActualSend(allToSend);
+}
+
+// envia de fato para o Sheets
+async function doActualSend(leadsArray){
+  if(leadsArray.length===0){showToast('Nenhum lead para enviar');return}
   const btn=document.getElementById('sheets-btn');
   btn.disabled=true;btn.textContent='⏳ Enviando...';
+  const clean=leadsArray.map(l=>({...l,telefone:l.telefone?l.telefone.replace(/\+/g,''):'',primeiro_nome:l.primeiro_nome||''}));
   try{
     await fetch(SHEETS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(clean)});
     btn.textContent='✓ Enviado para Google Sheets!';
-    document.getElementById('sheets-hint').textContent=`${valid.length} leads adicionados à planilha`;
-    showToast(`✓ ${valid.length} leads enviados!`,3000);
-  }catch(e){btn.disabled=false;btn.textContent='📊 Enviar para Google Sheets';showToast('Erro ao conectar com Sheets')}
+    document.getElementById('sheets-hint').textContent=`${leadsArray.length} leads adicionados à planilha`;
+    showToast(`✓ ${leadsArray.length} leads enviados!`,3000);
+  }catch(e){
+    btn.disabled=false;btn.textContent='📊 Enviar para Google Sheets';
+    showToast('Erro ao conectar com Sheets');
+  }
 }
+
+// constrói e abre o modal de duplicatas
+function openDupModal(leadsOk, duplicatas, details){
+  _dupState={leadsToSend:leadsOk,duplicatas:duplicatas};
+
+  // subtítulo
+  document.getElementById('dup-modal-sub').textContent=
+    `${duplicatas.length} lead(s) com telefone já cadastrado. Revise e decida o que enviar.`;
+
+  // leads ok
+  const okEl=document.getElementById('dup-ok-section');
+  if(leadsOk.length>0){
+    okEl.style.display='block';
+    okEl.textContent=`✓ ${leadsOk.length} lead(s) sem duplicata — serão enviados automaticamente`;
+  } else {
+    okEl.style.display='none';
+  }
+
+  // resumo
+  const sessDups=details.filter(d=>d.type==='session');
+  const sheetDups=details.filter(d=>d.type==='sheet');
+  let sumParts=[];
+  if(sessDups.length) sumParts.push(`${sessDups.length} repetido(s) no lote`);
+  if(sheetDups.length) sumParts.push(`${sheetDups.length} já na planilha`);
+  document.getElementById('dup-summary').textContent=sumParts.join(' · ');
+
+  // seção: repetidos na sessão
+  const sessSection=document.getElementById('dup-session-section');
+  const sessList=document.getElementById('dup-session-list');
+  if(sessDups.length>0){
+    sessSection.style.display='block';
+    sessList.innerHTML=sessDups.map((d,i)=>{
+      const globalIdx=details.indexOf(d);
+      return `<div class="dup-item type-session">
+        <input type="checkbox" class="dup-checkbox" id="dup-cb-${globalIdx}">
+        <div class="dup-item-info">
+          <div class="dup-item-name">${d.nome||'—'}</div>
+          <div class="dup-item-detail">📞 ${d.telefone||'—'} · ${d.produto||'—'}</div>
+          <span class="dup-item-badge session">🔁 Repetido no lote</span>
+        </div>
+      </div>`;
+    }).join('');
+  } else {
+    sessSection.style.display='none';
+  }
+
+  // seção: já na planilha
+  const sheetSection=document.getElementById('dup-sheet-section');
+  const sheetList=document.getElementById('dup-sheet-list');
+  if(sheetDups.length>0){
+    sheetSection.style.display='block';
+    sheetList.innerHTML=sheetDups.map((d,i)=>{
+      const globalIdx=details.indexOf(d);
+      return `<div class="dup-item type-sheet">
+        <input type="checkbox" class="dup-checkbox" id="dup-cb-${globalIdx}">
+        <div class="dup-item-info">
+          <div class="dup-item-name">${d.nome||'—'}</div>
+          <div class="dup-item-detail">📞 ${d.telefone||'—'} · ${d.produto||'—'}</div>
+          <span class="dup-item-badge sheet">📊 Já na planilha</span>
+        </div>
+      </div>`;
+    }).join('');
+  } else {
+    sheetSection.style.display='none';
+  }
+
+  document.getElementById('dup-modal').classList.add('open');
+}
+
+// ponto de entrada: botão "Enviar para Google Sheets"
+async function sendToSheets(){
+  const valid=leads.filter(l=>!l.erro);
+  if(valid.length===0) return;
+
+  const btn=document.getElementById('sheets-btn');
+  btn.disabled=true;btn.textContent='⏳ Verificando duplicatas...';
+
+  // 1. busca telefones já na planilha
+  const sheetsPhones=await fetchSheetsPhones();
+
+  // 2. checagem intra-sessão: detecta telefones repetidos no lote atual
+  const seenInSession=new Map(); // tel normalizado → primeiro lead
+  valid.forEach(l=>{
+    const t=normalizeTel(l.telefone);
+    if(t) seenInSession.set(t, (seenInSession.get(t)||[]));
+    if(t) seenInSession.get(t).push(l);
+  });
+
+  const leadsOk=[];
+  const duplicatas=[];
+  const dupDetails=[];
+  const processedTels=new Set();
+
+  valid.forEach(l=>{
+    const t=normalizeTel(l.telefone);
+
+    // duplicata contra planilha
+    if(t && sheetsPhones.includes(t)){
+      duplicatas.push(l);
+      dupDetails.push({...l,type:'sheet'});
+      return;
+    }
+
+    // duplicata intra-sessão (segundo em diante para o mesmo tel)
+    if(t && processedTels.has(t)){
+      duplicatas.push(l);
+      dupDetails.push({...l,type:'session'});
+      return;
+    }
+
+    if(t) processedTels.add(t);
+    leadsOk.push(l);
+  });
+
+  btn.disabled=false;btn.textContent='📊 Enviar para Google Sheets';
+
+  // sem duplicatas: envia direto
+  if(duplicatas.length===0){
+    await doActualSend(leadsOk);
+    return;
+  }
+
+  // com duplicatas: abre modal de revisão
+  openDupModal(leadsOk,duplicatas,dupDetails);
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 function exportCSV(){
   const valid=leads.filter(l=>!l.erro);if(valid.length===0)return;
