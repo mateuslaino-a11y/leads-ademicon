@@ -423,8 +423,11 @@ function renderLeads(){
 
 // ─── DEDUPLICAÇÃO v2.0 ────────────────────────────────────────────────────────
 
-// normaliza telefone para comparação: só dígitos
-function normalizeTel(tel){return (tel||'').replace(/\D/g,'')}
+// normaliza telefone: só dígitos, pega os últimos 11 (DDD + número)
+function normalizeTel(tel){
+  const digits=(tel||'').replace(/\D/g,'');
+  return digits.length>11?digits.slice(-11):digits;
+}
 
 // busca telefones já na planilha via doGet (JSONP para evitar CORS)
 async function fetchSheetsPhones(){
@@ -461,15 +464,13 @@ function toggleAllDups(checked){
 
 // chamado pelo botão "Enviar selecionados" do modal
 async function confirmSendWithDups(){
-  // leads sem duplicata + os duplicados que o user marcou para enviar
-  const selected=new Set([..._dupState.leadsToSend.map((_,i)=>i)]);
-  const checkedDups=[..._dupState.duplicatas].filter((_,i)=>{
+  const checkedDups=_dupState.duplicatas.filter((_,i)=>{
     const cb=document.getElementById(`dup-cb-${i}`);
     return cb&&cb.checked;
   });
-  const allToSend=[..._dupState.leadsToSend,...checkedDups];
   closeDupModal();
-  await doActualSend(allToSend);
+  if(checkedDups.length>0) await doActualSend(checkedDups);
+  else showToast('Nenhum duplicado selecionado para enviar',2500);
 }
 
 // envia de fato para o Sheets
@@ -490,8 +491,11 @@ async function doActualSend(leadsArray){
 }
 
 // constrói e abre o modal de duplicatas
-function openDupModal(leadsOk, duplicatas, details){
-  _dupState={leadsToSend:leadsOk,duplicatas:duplicatas};
+async function openDupModal(leadsOk, duplicatas, details){
+  _dupState={leadsToSend:[],duplicatas:duplicatas};
+
+  // envia os leads sem duplicata imediatamente em background
+  if(leadsOk.length>0) doActualSend(leadsOk);
 
   // subtítulo
   document.getElementById('dup-modal-sub').textContent=
@@ -501,7 +505,7 @@ function openDupModal(leadsOk, duplicatas, details){
   const okEl=document.getElementById('dup-ok-section');
   if(leadsOk.length>0){
     okEl.style.display='block';
-    okEl.textContent=`✓ ${leadsOk.length} lead(s) sem duplicata — serão enviados automaticamente`;
+    okEl.textContent=`✓ ${leadsOk.length} lead(s) sem duplicata — sendo enviados automaticamente`;
   } else {
     okEl.style.display='none';
   }
