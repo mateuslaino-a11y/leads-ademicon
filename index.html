@@ -289,7 +289,7 @@
   </div>
 </div>
 
-<div style="text-align:center;padding:20px 0 0;font-size:11px;font-family:'IBM Plex Mono',monospace;color:#9B9690;">v2.1 — Trilha 41 · Ademicon</div>
+<div style="text-align:center;padding:20px 0 0;font-size:11px;font-family:'IBM Plex Mono',monospace;color:#9B9690;">v2.3 — Trilha 41 · Ademicon</div>
 
 <script>
 
@@ -469,23 +469,26 @@ async function confirmSendWithDups(){
     return cb&&cb.checked;
   });
   closeDupModal();
-  if(checkedDups.length>0) await doActualSend(checkedDups);
+  if(checkedDups.length>0) await doActualSend(checkedDups, false);
   else showToast('Nenhum duplicado selecionado para enviar',2500);
 }
 
 // envia de fato para o Sheets
-async function doActualSend(leadsArray){
-  if(leadsArray.length===0){showToast('Nenhum lead para enviar');return}
+// background=true: não mexe no botão (envio silencioso dos limpos enquanto modal está aberto)
+async function doActualSend(leadsArray, background=false){
+  if(leadsArray.length===0){if(!background)showToast('Nenhum lead para enviar');return}
   const btn=document.getElementById('sheets-btn');
-  btn.disabled=true;btn.textContent='⏳ Enviando...';
+  if(!background){btn.disabled=true;btn.textContent='⏳ Enviando...';}
   const clean=leadsArray.map(l=>({...l,telefone:l.telefone?l.telefone.replace(/\+/g,''):'',primeiro_nome:l.primeiro_nome||''}));
   try{
     await fetch(SHEETS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(clean)});
-    btn.textContent='✓ Enviado para Google Sheets!';
-    document.getElementById('sheets-hint').textContent=`${leadsArray.length} leads adicionados à planilha`;
+    if(!background){
+      btn.textContent='✓ Enviado para Google Sheets!';
+      document.getElementById('sheets-hint').textContent=`${leadsArray.length} leads adicionados à planilha`;
+    }
     showToast(`✓ ${leadsArray.length} leads enviados!`,3000);
   }catch(e){
-    btn.disabled=false;btn.textContent='📊 Enviar para Google Sheets';
+    if(!background){btn.disabled=false;btn.textContent='📊 Enviar para Google Sheets';}
     showToast('Erro ao conectar com Sheets');
   }
 }
@@ -494,8 +497,8 @@ async function doActualSend(leadsArray){
 async function openDupModal(leadsOk, duplicatas, details){
   _dupState={leadsToSend:[],duplicatas:duplicatas};
 
-  // envia os leads sem duplicata imediatamente em background
-  if(leadsOk.length>0) doActualSend(leadsOk);
+  // envia os leads sem duplicata imediatamente em background (sem mexer no botão)
+  if(leadsOk.length>0) doActualSend(leadsOk, true);
 
   // subtítulo
   document.getElementById('dup-modal-sub').textContent=
